@@ -19,16 +19,27 @@ func main() {
 	group.Go(func() error {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-		<-sigChan // block until receive signal
-
-		cancel()
-		return nil
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-sigChan:
+				cancel()
+				return nil
+			}
+		}
 	})
 
 	// httpserver
 	group.Go(func() error {
-		err := http.ListenAndServe(":2333", http.DefaultServeMux) // block or error
-
+		s := http.Server{}
+		go func() {
+			select {
+			case <-ctx.Done():
+				s.Shutdown(ctx)
+			}
+		}()
+		err := s.ListenAndServe()
 		cancel()
 		return err
 	})
