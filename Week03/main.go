@@ -13,6 +13,7 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	group, _ := errgroup.WithContext(ctx)
 
 	// signal
@@ -23,9 +24,8 @@ func main() {
 			select {
 			case <-ctx.Done():
 				return nil
-			case <-sigChan:
-				cancel()
-				return nil
+			case s := <-sigChan:
+				return fmt.Errorf("syscall signal:%v", s)
 			}
 		}
 	})
@@ -39,9 +39,7 @@ func main() {
 				s.Shutdown(ctx)
 			}
 		}()
-		err := s.ListenAndServe()
-		cancel()
-		return err
+		return s.ListenAndServe()
 	})
 
 	if err := group.Wait(); err != nil {
