@@ -60,7 +60,7 @@ func (r *RollingWindow) Increment(i float64) {
 	r.removeOldBuckets()
 }
 
-// UpdateMax 更新值最大的那个bucket(应用场景)
+// UpdateMax 对比并更新当前bucket (这个函数的应用场景是啥呢？)
 func (r *RollingWindow) UpdateMax(n float64) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
