@@ -63,11 +63,10 @@ func (m *MyTCPServer) Stop() {
 
 // read
 func (m *MyTCPServer) read(conn net.Conn, ch chan []byte) {
-	ctx, _ := context.WithCancel(m.ctx)
 	r := bufio.NewReader(conn)
 	for {
 		select {
-		case <-ctx.Done():
+		case <-m.ctx.Done():
 			conn.Close()
 			return
 		default:
@@ -89,10 +88,9 @@ func (m *MyTCPServer) read(conn net.Conn, ch chan []byte) {
 
 // write
 func (m *MyTCPServer) write(conn net.Conn, ch chan []byte) {
-	ctx, _ := context.WithCancel(m.ctx)
 	for {
 		select {
-		case <-ctx.Done():
+		case <-m.ctx.Done():
 			return
 		case data := <-ch:
 			ret := fmt.Sprintf("got: %s\n", string(data))
